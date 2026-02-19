@@ -64,7 +64,9 @@ async function detectCMS(page: Page): Promise<CMSInfo> {
 
     // Check for WordPress-specific classes
     const hasWpClasses = await page.evaluate(() => {
-      return document.body.className.includes('wp-') || 
+      const body = document.body;
+      if (!body) return false;
+      return body.className.includes('wp-') || 
              !!document.querySelector('.wp-block-');
     });
 
@@ -74,7 +76,9 @@ async function detectCMS(page: Page): Promise<CMSInfo> {
 
     // Check for Drupal-specific patterns
     const hasDrupalClasses = await page.evaluate(() => {
-      return document.body.className.includes('drupal') ||
+      const body = document.body;
+      if (!body) return false;
+      return body.className.includes('drupal') ||
              !!document.querySelector('[data-drupal-selector]');
     });
 
