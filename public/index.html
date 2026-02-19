@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FixBot MVP - AI Accessibility Scanner</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    h1 {
+      color: white;
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 2.5em;
+    }
+    .subtitle {
+      color: rgba(255,255,255,0.9);
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 30px;
+      margin-bottom: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+    .scan-form {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    input[type="text"] {
+      flex: 1;
+      padding: 15px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+    button {
+      padding: 15px 30px;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+    button:hover { background: #5568d3; transform: translateY(-2px); }
+    button:disabled { background: #ccc; cursor: not-allowed; }
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #667eea;
+      font-weight: 600;
+    }
+    .report {
+      display: none;
+    }
+    .report.active {
+      display: block;
+    }
+    .score-box {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 30px;
+      border-radius: 12px;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .score-number {
+      font-size: 4em;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+    .categories {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+    .category {
+      background: rgba(255,255,255,0.2);
+      padding: 15px;
+      border-radius: 8px;
+    }
+    .issue {
+      border-left: 4px solid #667eea;
+      padding: 15px;
+      margin-bottom: 15px;
+      background: #f8f9fa;
+      border-radius: 4px;
+    }
+    .issue.critical { border-left-color: #dc3545; }
+    .issue.high { border-left-color: #fd7e14; }
+    .issue.moderate { border-left-color: #ffc107; }
+    .issue.low { border-left-color: #28a745; }
+    .issue-title {
+      font-weight: 600;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .severity-badge {
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .severity-badge.critical { background: #dc3545; color: white; }
+    .severity-badge.high { background: #fd7e14; color: white; }
+    .severity-badge.moderate { background: #ffc107; color: black; }
+    .severity-badge.low { background: #28a745; color: white; }
+    .chat-section {
+      margin-top: 30px;
+      border-top: 2px solid #e0e0e0;
+      padding-top: 30px;
+    }
+    .chat-messages {
+      max-height: 400px;
+      overflow-y: auto;
+      margin-bottom: 20px;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 8px;
+    }
+    .message {
+      margin-bottom: 15px;
+      padding: 12px;
+      border-radius: 8px;
+    }
+    .message.user {
+      background: #667eea;
+      color: white;
+      margin-left: 20%;
+    }
+    .message.bot {
+      background: white;
+      border: 2px solid #e0e0e0;
+      margin-right: 20%;
+      white-space: pre-wrap;
+    }
+    .chat-input {
+      display: flex;
+      gap: 10px;
+    }
+    .error {
+      background: #dc3545;
+      color: white;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🤖 FixBot MVP</h1>
+    <p class="subtitle">AI-Powered Accessibility Scanner</p>
+
+    <div class="card">
+      <h2>Scan a Website</h2>
+      <div class="scan-form">
+        <input type="text" id="urlInput" placeholder="Enter URL (e.g., https://example.com)" value="https://example.com">
+        <button id="scanBtn" onclick="scanUrl()">Scan Now</button>
+      </div>
+      <div id="loading" class="loading" style="display:none;">
+        🔍 Scanning... This may take 10-30 seconds...
+      </div>
+      <div id="error" class="error" style="display:none;"></div>
+    </div>
+
+    <div id="report" class="card report">
+      <div class="score-box">
+        <div>Overall Accessibility Score</div>
+        <div class="score-number" id="overallScore">--</div>
+        <div id="cmsInfo"></div>
+        <div class="categories">
+          <div class="category">
+            <div>Accessibility</div>
+            <div style="font-size: 2em; font-weight: bold;" id="accessScore">--</div>
+          </div>
+          <div class="category">
+            <div>Structure</div>
+            <div style="font-size: 2em; font-weight: bold;" id="structScore">--</div>
+          </div>
+          <div class="category">
+            <div>Content Quality</div>
+            <div style="font-size: 2em; font-weight: bold;" id="contentScore">--</div>
+          </div>
+        </div>
+      </div>
+
+      <h2>Issues Found (<span id="issueCount">0</span>)</h2>
+      <div id="issues"></div>
+
+      <div class="chat-section">
+        <h2>💬 Chat with FixBot</h2>
+        <p style="margin-bottom: 15px; color: #666;">Ask me about any issue and I'll help you fix it!</p>
+        <div class="chat-messages" id="chatMessages">
+          <div class="message bot">Hi! I'm FixBot 👋 I've analyzed your page and found some accessibility issues. Ask me anything about them and I'll help you fix them in plain English!</div>
+        </div>
+        <div class="chat-input">
+          <input type="text" id="chatInput" placeholder="Ask about images, headings, or get an overview...">
+          <button onclick="sendMessage()">Send</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentScanId = null;
+
+    async function scanUrl() {
+      const url = document.getElementById('urlInput').value;
+      const loading = document.getElementById('loading');
+      const error = document.getElementById('error');
+      const report = document.getElementById('report');
+      const scanBtn = document.getElementById('scanBtn');
+
+      if (!url) {
+        showError('Please enter a URL');
+        return;
+      }
+
+      loading.style.display = 'block';
+      error.style.display = 'none';
+      report.classList.remove('active');
+      scanBtn.disabled = true;
+
+      try {
+        const response = await fetch('http://localhost:3000/api/scan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url })
+        });
+
+        if (!response.ok) throw new Error('Scan failed');
+
+        const data = await response.json();
+        currentScanId = data.scanId;
+
+        // Fetch the report
+        await loadReport(data.scanId);
+      } catch (err) {
+        showError(err.message);
+      } finally {
+        loading.style.display = 'none';
+        scanBtn.disabled = false;
+      }
+    }
+
+    async function loadReport(scanId) {
+      const response = await fetch(`http://localhost:3000/api/scans/${scanId}`);
+      const report = await response.json();
+
+      document.getElementById('overallScore').textContent = Math.round(report.scores.overall);
+      document.getElementById('accessScore').textContent = Math.round(report.scores.categories.accessibility);
+      document.getElementById('structScore').textContent = Math.round(report.scores.categories.structure);
+      document.getElementById('contentScore').textContent = Math.round(report.scores.categories.contentQuality);
+      document.getElementById('issueCount').textContent = report.issues.length;
+      document.getElementById('cmsInfo').textContent = report.cms.platform !== 'unknown' 
+        ? `Detected: ${report.cms.platform} (${report.cms.confidence} confidence)`
+        : 'CMS not detected';
+
+      const issuesDiv = document.getElementById('issues');
+      issuesDiv.innerHTML = report.issues.map(issue => `
+        <div class="issue ${issue.severity}">
+          <div class="issue-title">
+            <span class="severity-badge ${issue.severity}">${issue.severity}</span>
+            ${issue.title}
+          </div>
+          <p style="margin: 8px 0;"><strong>Why it matters:</strong> ${issue.whyItMatters}</p>
+          <p style="margin: 8px 0;"><strong>Location:</strong> ${issue.evidence.location}</p>
+          <p style="margin: 8px 0; color: #666;"><code>${issue.evidence.snippet}</code></p>
+          <p style="margin: 8px 0;"><strong>How to fix:</strong> ${issue.suggestedFix}</p>
+        </div>
+      `).join('');
+
+      document.getElementById('report').classList.add('active');
+      
+      // Reset chat
+      document.getElementById('chatMessages').innerHTML = `
+        <div class="message bot">Hi! I'm FixBot 👋 I've analyzed your page and found ${report.issues.length} issue${report.issues.length !== 1 ? 's' : ''}. Ask me anything about them and I'll help you fix them!</div>
+      `;
+    }
+
+    async function sendMessage() {
+      const input = document.getElementById('chatInput');
+      const message = input.value.trim();
+      if (!message || !currentScanId) return;
+
+      const chatMessages = document.getElementById('chatMessages');
+      
+      // Add user message
+      chatMessages.innerHTML += `<div class="message user">${message}</div>`;
+      input.value = '';
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+
+      try {
+        const response = await fetch('http://localhost:3000/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ scanId: currentScanId, message })
+        });
+
+        const data = await response.json();
+        chatMessages.innerHTML += `<div class="message bot">${data.response}</div>`;
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      } catch (err) {
+        chatMessages.innerHTML += `<div class="message bot">Sorry, I encountered an error. Please try again.</div>`;
+      }
+    }
+
+    function showError(msg) {
+      const error = document.getElementById('error');
+      error.textContent = msg;
+      error.style.display = 'block';
+    }
+
+    // Allow Enter key to send chat
+    document.getElementById('chatInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') sendMessage();
+    });
+
+    // Allow Enter key to scan
+    document.getElementById('urlInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') scanUrl();
+    });
+  </script>
+</body>
+</html>

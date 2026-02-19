@@ -51,3 +51,6 @@ temp/
 # Kiro (keep spec files, ignore other Kiro artifacts)
 .kiro/cache/
 .kiro/logs/
+
+# Local data storage
+data/
