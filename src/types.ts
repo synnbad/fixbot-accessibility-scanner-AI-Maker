@@ -47,9 +47,17 @@ export interface ScanRequest {
 export interface ChatRequest {
   scanId: string;
   message: string;
+  userProfile?: UserProfile;
 }
 
 export interface ChatResponse {
   response: string;
   citations: string[];
+  needsProfileSetup?: boolean;
+}
+
+export interface UserProfile {
+  skillLevel: 'beginner' | 'intermediate' | 'advanced';
+  role: 'content-editor' | 'developer' | 'designer' | 'site-owner' | 'other';
+  preferredDetail: 'step-by-step' | 'summary' | 'technical';
 }

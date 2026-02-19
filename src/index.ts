@@ -71,7 +71,7 @@ app.get('/api/scans/:scanId', (req, res) => {
 // POST /chat - Chat with FixBot
 app.post('/api/chat', (req, res) => {
   try {
-    const { scanId, message } = req.body as ChatRequest;
+    const { scanId, message, userProfile } = req.body as ChatRequest;
 
     if (!scanId || !message) {
       return res.status(400).json({ error: 'scanId and message are required' });
@@ -82,7 +82,7 @@ app.post('/api/chat', (req, res) => {
       return res.status(404).json({ error: 'Report not found' });
     }
 
-    const response = generateFixBotResponse(report, message);
+    const response = generateFixBotResponse(report, message, userProfile);
     res.json(response);
   } catch (error: any) {
     console.error('Chat error:', error);

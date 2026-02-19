@@ -223,6 +223,7 @@
 
   <script>
     let currentScanId = null;
+    let userProfile = null; // Track user's skill level
 
     async function scanUrl() {
       const url = document.getElementById('urlInput').value;
@@ -292,9 +293,10 @@
 
       document.getElementById('report').classList.add('active');
       
-      // Reset chat
+      // Reset chat and ask for skill level
+      userProfile = null;
       document.getElementById('chatMessages').innerHTML = `
-        <div class="message bot">Hi! I'm FixBot 👋 I've analyzed your page and found ${report.issues.length} issue${report.issues.length !== 1 ? 's' : ''}. Ask me anything about them and I'll help you fix them!</div>
+        <div class="message bot">Hi there! 👋 I'm FixBot, your accessibility assistant!<br><br>Before we dive in, I'd love to know a bit about you so I can tailor my guidance:<br><br><strong>What's your experience level?</strong><br>- 🌱 Beginner: "I'm new to web accessibility"<br>- 🌿 Intermediate: "I know the basics"<br>- 🌳 Advanced: "I'm experienced with WCAG"<br><br>Just tell me which one fits you best!</div>
       `;
     }
 
@@ -310,11 +312,25 @@
       input.value = '';
       chatMessages.scrollTop = chatMessages.scrollHeight;
 
+      // Check if user is setting their skill level
+      const lowerMessage = message.toLowerCase();
+      if (!userProfile && (lowerMessage.includes('beginner') || lowerMessage.includes('new'))) {
+        userProfile = { skillLevel: 'beginner', role: 'content-editor', preferredDetail: 'step-by-step' };
+      } else if (!userProfile && (lowerMessage.includes('intermediate') || lowerMessage.includes('basics'))) {
+        userProfile = { skillLevel: 'intermediate', role: 'site-owner', preferredDetail: 'summary' };
+      } else if (!userProfile && (lowerMessage.includes('advanced') || lowerMessage.includes('experienced') || lowerMessage.includes('wcag'))) {
+        userProfile = { skillLevel: 'advanced', role: 'developer', preferredDetail: 'technical' };
+      }
+
       try {
         const response = await fetch('http://localhost:3000/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ scanId: currentScanId, message })
+          body: JSON.stringify({ 
+            scanId: currentScanId, 
+            message,
+            userProfile
+          })
         });
 
         const data = await response.json();
