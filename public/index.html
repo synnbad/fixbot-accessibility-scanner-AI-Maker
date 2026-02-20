@@ -3,173 +3,465 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FixBot MVP - AI Accessibility Scanner</title>
+  <title>FixBot - AI Accessibility Scanner</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * { 
+      margin: 0; 
+      padding: 0; 
+      box-sizing: border-box; 
+    }
+    
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       min-height: 100vh;
       padding: 20px;
+      position: relative;
+      overflow-x: hidden;
     }
+
+    /* Animated background particles */
+    .bg-particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .particle {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      animation: float 20s infinite ease-in-out;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0) translateX(0); }
+      25% { transform: translateY(-100px) translateX(50px); }
+      50% { transform: translateY(-50px) translateX(-50px); }
+      75% { transform: translateY(-150px) translateX(100px); }
+    }
+
     .container {
-      max-width: 1200px;
+      max-width: 1400px;
       margin: 0 auto;
+      position: relative;
+      z-index: 1;
     }
+
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 50px;
+      animation: fadeIn 0.8s ease-out;
+    }
+
     h1 {
       color: white;
-      text-align: center;
-      margin-bottom: 30px;
-      font-size: 2.5em;
+      font-size: 3.5em;
+      font-weight: 800;
+      margin-bottom: 15px;
+      text-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      letter-spacing: -1px;
     }
+
+    .logo {
+      font-size: 1.2em;
+      margin-right: 10px;
+    }
+
     .subtitle {
-      color: rgba(255,255,255,0.9);
-      text-align: center;
-      margin-bottom: 40px;
+      color: rgba(255,255,255,0.95);
+      font-size: 1.3em;
+      font-weight: 300;
+      letter-spacing: 0.5px;
     }
+
+    /* Glassmorphism card */
     .card {
-      background: white;
-      border-radius: 12px;
-      padding: 30px;
-      margin-bottom: 20px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
+      padding: 40px;
+      margin-bottom: 30px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      animation: slideIn 0.6s ease-out;
     }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes countUp {
+      from { opacity: 0; transform: scale(0.5); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    h2 {
+      color: #2d3748;
+      font-size: 1.8em;
+      font-weight: 700;
+      margin-bottom: 25px;
+    }
+
+    /* Scan form */
     .scan-form {
       display: flex;
-      gap: 10px;
+      gap: 15px;
       margin-bottom: 20px;
     }
+
     input[type="text"] {
       flex: 1;
-      padding: 15px;
-      border: 2px solid #e0e0e0;
-      border-radius: 8px;
+      padding: 18px 24px;
+      border: 2px solid #e2e8f0;
+      border-radius: 16px;
       font-size: 16px;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.3s ease;
+      background: white;
     }
+
+    input[type="text"]:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    }
+
     button {
-      padding: 15px 30px;
-      background: #667eea;
+      padding: 18px 36px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
       border: none;
-      border-radius: 8px;
+      border-radius: 16px;
       font-size: 16px;
-      cursor: pointer;
       font-weight: 600;
-      transition: all 0.3s;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+      font-family: 'Inter', sans-serif;
     }
-    button:hover { background: #5568d3; transform: translateY(-2px); }
-    button:disabled { background: #ccc; cursor: not-allowed; }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    button:disabled {
+      background: #cbd5e0;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+
+    /* Loading spinner */
     .loading {
       text-align: center;
-      padding: 20px;
+      padding: 30px;
       color: #667eea;
       font-weight: 600;
+      font-size: 1.1em;
     }
+
+    .spinner {
+      display: inline-block;
+      width: 40px;
+      height: 40px;
+      border: 4px solid #e2e8f0;
+      border-top-color: #667eea;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 15px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
     .report {
       display: none;
     }
+
     .report.active {
       display: block;
+      animation: fadeIn 0.6s ease-out;
     }
+
+    /* Score box */
     .score-box {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
-      padding: 30px;
-      border-radius: 12px;
+      padding: 50px;
+      border-radius: 20px;
       text-align: center;
-      margin-bottom: 30px;
+      margin-bottom: 40px;
+      box-shadow: 0 10px 40px rgba(102, 126, 234, 0.4);
     }
-    .score-number {
-      font-size: 4em;
-      font-weight: bold;
-      margin: 10px 0;
-    }
-    .categories {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 15px;
-      margin-top: 20px;
-    }
-    .category {
-      background: rgba(255,255,255,0.2);
-      padding: 15px;
-      border-radius: 8px;
-    }
-    .issue {
-      border-left: 4px solid #667eea;
-      padding: 15px;
+
+    .score-label {
+      font-size: 1.2em;
+      font-weight: 300;
+      opacity: 0.95;
       margin-bottom: 15px;
-      background: #f8f9fa;
-      border-radius: 4px;
-    }
-    .issue.critical { border-left-color: #dc3545; }
-    .issue.high { border-left-color: #fd7e14; }
-    .issue.moderate { border-left-color: #ffc107; }
-    .issue.low { border-left-color: #28a745; }
-    .issue-title {
-      font-weight: 600;
-      margin-bottom: 8px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .severity-badge {
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-size: 12px;
-      font-weight: 600;
+      letter-spacing: 1px;
       text-transform: uppercase;
     }
-    .severity-badge.critical { background: #dc3545; color: white; }
-    .severity-badge.high { background: #fd7e14; color: white; }
-    .severity-badge.moderate { background: #ffc107; color: black; }
-    .severity-badge.low { background: #28a745; color: white; }
-    .chat-section {
+
+    .score-number {
+      font-size: 5.5em;
+      font-weight: 800;
+      margin: 20px 0;
+      animation: countUp 0.8s ease-out;
+      text-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+
+    .cms-info {
+      font-size: 1.1em;
+      opacity: 0.9;
+      margin-top: 15px;
+      padding: 12px 24px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      display: inline-block;
+    }
+
+    /* Categories grid */
+    .categories {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
       margin-top: 30px;
-      border-top: 2px solid #e0e0e0;
-      padding-top: 30px;
     }
-    .chat-messages {
-      max-height: 400px;
-      overflow-y: auto;
-      margin-bottom: 20px;
-      padding: 20px;
-      background: #f8f9fa;
-      border-radius: 8px;
+
+    .category {
+      background: rgba(255,255,255,0.2);
+      padding: 25px;
+      border-radius: 16px;
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
     }
-    .message {
-      margin-bottom: 15px;
-      padding: 12px;
-      border-radius: 8px;
+
+    .category:hover {
+      background: rgba(255,255,255,0.3);
+      transform: translateY(-4px);
     }
-    .message.user {
+
+    .category-label {
+      font-size: 0.95em;
+      opacity: 0.9;
+      margin-bottom: 10px;
+      font-weight: 500;
+    }
+
+    .category-score {
+      font-size: 2.8em;
+      font-weight: 800;
+      animation: countUp 0.8s ease-out;
+    }
+
+    /* Issues section */
+    .issues-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+    }
+
+    .issue-count {
       background: #667eea;
       color: white;
-      margin-left: 20%;
+      padding: 8px 20px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 0.95em;
     }
+
+    .issue {
+      border-left: 5px solid #667eea;
+      padding: 24px;
+      margin-bottom: 20px;
+      background: #f7fafc;
+      border-radius: 12px;
+      transition: all 0.3s ease;
+      animation: slideIn 0.4s ease-out;
+    }
+
+    .issue:hover {
+      transform: translateX(4px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .issue.critical { border-left-color: #e53e3e; background: #fff5f5; }
+    .issue.high { border-left-color: #dd6b20; background: #fffaf0; }
+    .issue.moderate { border-left-color: #d69e2e; background: #fffff0; }
+    .issue.low { border-left-color: #38a169; background: #f0fff4; }
+
+    .issue-title {
+      font-weight: 700;
+      font-size: 1.15em;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #2d3748;
+    }
+
+    .severity-badge {
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .severity-badge.critical { background: #e53e3e; color: white; }
+    .severity-badge.high { background: #dd6b20; color: white; }
+    .severity-badge.moderate { background: #d69e2e; color: white; }
+    .severity-badge.low { background: #38a169; color: white; }
+
+    .issue-detail {
+      margin: 12px 0;
+      color: #4a5568;
+      line-height: 1.6;
+    }
+
+    .issue-detail strong {
+      color: #2d3748;
+      font-weight: 600;
+    }
+
+    .issue-code {
+      background: #edf2f7;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9em;
+      color: #2d3748;
+      margin: 12px 0;
+      overflow-x: auto;
+    }
+
+    /* Chat section */
+    .chat-section {
+      margin-top: 40px;
+      border-top: 2px solid #e2e8f0;
+      padding-top: 40px;
+    }
+
+    .chat-intro {
+      margin-bottom: 20px;
+      color: #4a5568;
+      font-size: 1.05em;
+      line-height: 1.6;
+    }
+
+    .chat-messages {
+      max-height: 500px;
+      overflow-y: auto;
+      margin-bottom: 25px;
+      padding: 25px;
+      background: #f7fafc;
+      border-radius: 16px;
+      border: 2px solid #e2e8f0;
+    }
+
+    .chat-messages::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .chat-messages::-webkit-scrollbar-track {
+      background: #edf2f7;
+      border-radius: 10px;
+    }
+
+    .chat-messages::-webkit-scrollbar-thumb {
+      background: #cbd5e0;
+      border-radius: 10px;
+    }
+
+    .chat-messages::-webkit-scrollbar-thumb:hover {
+      background: #a0aec0;
+    }
+
+    .message {
+      margin-bottom: 18px;
+      padding: 16px 20px;
+      border-radius: 16px;
+      animation: slideIn 0.3s ease-out;
+      line-height: 1.6;
+    }
+
+    .message.user {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      margin-left: 15%;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
     .message.bot {
       background: white;
-      border: 2px solid #e0e0e0;
-      margin-right: 20%;
+      border: 2px solid #e2e8f0;
+      margin-right: 15%;
+      color: #2d3748;
       white-space: pre-wrap;
     }
+
     .chat-input {
       display: flex;
-      gap: 10px;
+      gap: 15px;
     }
+
     .error {
-      background: #dc3545;
+      background: linear-gradient(135deg, #fc8181 0%, #e53e3e 100%);
       color: white;
-      padding: 15px;
-      border-radius: 8px;
+      padding: 20px 24px;
+      border-radius: 16px;
       margin-bottom: 20px;
+      font-weight: 500;
+      box-shadow: 0 4px 12px rgba(229, 62, 62, 0.3);
+      animation: slideIn 0.4s ease-out;
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+      h1 { font-size: 2.5em; }
+      .subtitle { font-size: 1.1em; }
+      .card { padding: 25px; }
+      .scan-form { flex-direction: column; }
+      .score-number { font-size: 4em; }
+      .categories { grid-template-columns: 1fr; }
+      .message.user { margin-left: 5%; }
+      .message.bot { margin-right: 5%; }
     }
   </style>
 </head>
 <body>
+  <!-- Animated background -->
+  <div class="bg-particles" id="particles"></div>
+
   <div class="container">
-    <h1>🤖 FixBot MVP</h1>
-    <p class="subtitle">AI-Powered Accessibility Scanner</p>
+    <div class="header">
+      <h1><span class="logo">🤖</span>FixBot</h1>
+      <p class="subtitle">AI-Powered Accessibility Scanner</p>
+    </div>
 
     <div class="card">
       <h2>Scan a Website</h2>
@@ -178,40 +470,53 @@
         <button id="scanBtn" onclick="scanUrl()">Scan Now</button>
       </div>
       <div id="loading" class="loading" style="display:none;">
-        🔍 Scanning... This may take 10-30 seconds...
+        <div class="spinner"></div>
+        <div>Scanning your website... This may take 10-30 seconds</div>
       </div>
       <div id="error" class="error" style="display:none;"></div>
     </div>
 
     <div id="report" class="card report">
       <div class="score-box">
-        <div>Overall Accessibility Score</div>
+        <div class="score-label">Overall Accessibility Score</div>
         <div class="score-number" id="overallScore">--</div>
-        <div id="cmsInfo"></div>
+        <div class="cms-info" id="cmsInfo"></div>
         <div class="categories">
           <div class="category">
-            <div>Accessibility</div>
-            <div style="font-size: 2em; font-weight: bold;" id="accessScore">--</div>
+            <div class="category-label">Accessibility</div>
+            <div class="category-score" id="accessScore">--</div>
           </div>
           <div class="category">
-            <div>Structure</div>
-            <div style="font-size: 2em; font-weight: bold;" id="structScore">--</div>
+            <div class="category-label">Structure</div>
+            <div class="category-score" id="structScore">--</div>
           </div>
           <div class="category">
-            <div>Content Quality</div>
-            <div style="font-size: 2em; font-weight: bold;" id="contentScore">--</div>
+            <div class="category-label">Content Quality</div>
+            <div class="category-score" id="contentScore">--</div>
           </div>
         </div>
       </div>
 
-      <h2>Issues Found (<span id="issueCount">0</span>)</h2>
+      <div class="issues-header">
+        <h2>Issues Found</h2>
+        <div class="issue-count"><span id="issueCount">0</span> issues</div>
+      </div>
       <div id="issues"></div>
 
       <div class="chat-section">
         <h2>💬 Chat with FixBot</h2>
-        <p style="margin-bottom: 15px; color: #666;">Ask me about any issue and I'll help you fix it!</p>
+        <p class="chat-intro">Ask me about any issue and I'll help you fix it! I can explain problems, suggest solutions, and guide you through remediation steps.</p>
         <div class="chat-messages" id="chatMessages">
-          <div class="message bot">Hi! I'm FixBot 👋 I've analyzed your page and found some accessibility issues. Ask me anything about them and I'll help you fix them in plain English!</div>
+          <div class="message bot">Hi there! 👋 I'm FixBot, your accessibility assistant!
+
+Before we dive in, I'd love to know a bit about you so I can tailor my guidance:
+
+<strong>What's your experience level?</strong>
+🌱 Beginner: "I'm new to web accessibility"
+🌿 Intermediate: "I know the basics"
+🌳 Advanced: "I'm experienced with WCAG"
+
+Just tell me which one fits you best!</div>
         </div>
         <div class="chat-input">
           <input type="text" id="chatInput" placeholder="Ask about images, headings, or get an overview...">
@@ -222,8 +527,25 @@
   </div>
 
   <script>
+    // Create animated background particles
+    function createParticles() {
+      const container = document.getElementById('particles');
+      for (let i = 0; i < 15; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.width = Math.random() * 100 + 50 + 'px';
+        particle.style.height = particle.style.width;
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.top = Math.random() * 100 + '%';
+        particle.style.animationDelay = Math.random() * 20 + 's';
+        particle.style.animationDuration = (Math.random() * 10 + 15) + 's';
+        container.appendChild(particle);
+      }
+    }
+    createParticles();
+
     let currentScanId = null;
-    let userProfile = null; // Track user's skill level
+    let userProfile = null;
 
     async function scanUrl() {
       const url = document.getElementById('urlInput').value;
@@ -254,7 +576,6 @@
         const data = await response.json();
         currentScanId = data.scanId;
 
-        // Fetch the report
         await loadReport(data.scanId);
       } catch (err) {
         showError(err.message);
@@ -284,19 +605,27 @@
             <span class="severity-badge ${issue.severity}">${issue.severity}</span>
             ${issue.title}
           </div>
-          <p style="margin: 8px 0;"><strong>Why it matters:</strong> ${issue.whyItMatters}</p>
-          <p style="margin: 8px 0;"><strong>Location:</strong> ${issue.evidence.location}</p>
-          <p style="margin: 8px 0; color: #666;"><code>${issue.evidence.snippet}</code></p>
-          <p style="margin: 8px 0;"><strong>How to fix:</strong> ${issue.suggestedFix}</p>
+          <p class="issue-detail"><strong>Why it matters:</strong> ${issue.whyItMatters}</p>
+          <p class="issue-detail"><strong>Location:</strong> ${issue.evidence.location}</p>
+          <div class="issue-code">${issue.evidence.snippet}</div>
+          <p class="issue-detail"><strong>How to fix:</strong> ${issue.suggestedFix}</p>
         </div>
       `).join('');
 
       document.getElementById('report').classList.add('active');
       
-      // Reset chat and ask for skill level
       userProfile = null;
       document.getElementById('chatMessages').innerHTML = `
-        <div class="message bot">Hi there! 👋 I'm FixBot, your accessibility assistant!<br><br>Before we dive in, I'd love to know a bit about you so I can tailor my guidance:<br><br><strong>What's your experience level?</strong><br>- 🌱 Beginner: "I'm new to web accessibility"<br>- 🌿 Intermediate: "I know the basics"<br>- 🌳 Advanced: "I'm experienced with WCAG"<br><br>Just tell me which one fits you best!</div>
+        <div class="message bot">Hi there! 👋 I'm FixBot, your accessibility assistant!
+
+Before we dive in, I'd love to know a bit about you so I can tailor my guidance:
+
+<strong>What's your experience level?</strong>
+🌱 Beginner: "I'm new to web accessibility"
+🌿 Intermediate: "I know the basics"
+🌳 Advanced: "I'm experienced with WCAG"
+
+Just tell me which one fits you best!</div>
       `;
     }
 
@@ -307,12 +636,10 @@
 
       const chatMessages = document.getElementById('chatMessages');
       
-      // Add user message
       chatMessages.innerHTML += `<div class="message user">${message}</div>`;
       input.value = '';
       chatMessages.scrollTop = chatMessages.scrollHeight;
 
-      // Check if user is setting their skill level
       const lowerMessage = message.toLowerCase();
       if (!userProfile && (lowerMessage.includes('beginner') || lowerMessage.includes('new'))) {
         userProfile = { skillLevel: 'beginner', role: 'content-editor', preferredDetail: 'step-by-step' };
@@ -347,12 +674,10 @@
       error.style.display = 'block';
     }
 
-    // Allow Enter key to send chat
     document.getElementById('chatInput').addEventListener('keypress', (e) => {
       if (e.key === 'Enter') sendMessage();
     });
 
-    // Allow Enter key to scan
     document.getElementById('urlInput').addEventListener('keypress', (e) => {
       if (e.key === 'Enter') scanUrl();
     });
